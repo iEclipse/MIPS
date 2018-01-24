@@ -1,0 +1,102 @@
+.data
+	array: 10, 9, 8, 7, -6, 5, 4, 3, 2, 1 # Test Values
+	min: .asciiz "\nMinimum Number: "
+	combPrompt1: .asciiz "\n\nEnter Index N: "
+	combPrompt2: .asciiz "Enter Index R (R <= N): "
+	comb: .asciiz "Combination (N, R): "
+.globl main
+.text
+#####################################
+main:
+	la $a0, min	# Load Min Number Result Text
+	li $v0, 4
+	syscall
+	la $a0, array	# Load Arguments
+	li $a1, 0
+	li $a2, 9
+	jal minB
+	move $a0, $v0	#Print Min Result
+	li $v0, 1
+	syscall
+	la $a0, combPrompt1	# Load Comb Prompt1
+	li $v0, 4
+	syscall
+	li $v0, 5	# Preload N
+	syscall
+	move $s0, $v0 
+	la $a0, combPrompt2	# Load Comb Prompt2
+	li $v0, 4
+	syscall
+	li $v0, 5	# Load R
+	syscall
+	move $s1, $v0
+	la $a0, comb	# Load Comb Result Text
+	li $v0, 4
+	syscall
+	move $a0, $s0	# Move N
+	move $a1, $s1 	# Move R
+	jal combB
+	move $a0, $v0	# Print Comb Result
+	li $v0, 1
+	syscall
+	li $v0, 10 	# Exit
+	syscall
+#####################################
+minB: # Min(Array, Low, High)
+	bne $a1, $a2, minR
+	move $t0, $a0 		# Move Array to T0
+	sll $t1, $a1, 2 	# Multiply Min by 4
+	add $t0, $t0, $t1 	# Get starting Address
+	lw $v0, 0($t0) 		# Return Value of First
+	jr $ra
+minR:
+	add $t2, $a1, $a2 	# Get Mid
+	sra $t2, $t2, 1
+min1:
+	addi $sp, $sp, -12 	# Set Stack Pointer
+	sw $ra, 0($sp) 		# Store Return Address
+	sw $a2, 8($sp) 		# Store Max
+	move $a2, $t2		# Set Max to Mid
+	jal minB		# Min(Array, Low, Mid)
+	sw $v0, 4($sp) 		# Store Value of Min1
+	addi $t2, $t2, 1	# Mid++
+	move $a1, $t2		# Move Min to Mid + 1
+	lw $a2, 8($sp)		# Load Max
+	jal minB		# Min(Array, Mid+1, High)
+	move $t3, $v0		# Load Value of Min2
+	lw $t4, 4($sp)		# Load Value of Min1
+	bgt $t3, $t4, min2	# Check (Min1 > Min2)
+	move $v0, $t3		# Return min1
+	lw $ra, 0($sp)		# Restore Return Address
+	addi $sp, $sp, 12	# Restore Stack Pointer
+	jr $ra
+min2:
+	move $v0, $t4 		# Return min2
+	lw $ra 0($sp) 		# Restore Return Address
+	addi $sp, $sp, 12 	# Restore Stack Pointe
+	jr $ra
+#####################################
+combB: # Comb(Array, N, R)
+	beq $a0, $a1, return 	# Check (N == R)
+	beqz $a1, return	# Check (R == 0)
+combR:
+	addiu $sp, $sp, -16	# Set Stack Pointer
+	sw $ra, 0($sp)		# Store Return Address
+	sw $a0, 4($sp)		# Store N
+	sw $a1, 8($sp)		# Store R
+	addi $a0, $a0, -1	# N--
+	jal combB		# Comb(n - 1, r)
+	sw $v0, 12($sp)		# Store Result1
+	lw $a0, 4($sp)		# Load N
+	lw $a1, 8($sp)		# Load R
+	addi $a0, $a0, -1	# N--
+	addi $a1, $a1, -1	# R--
+	jal combB		# Comb(n - 1, r - 1)
+	lw $t0, 12($sp)		# Load Result
+	add $v0, $t0, $v0	# Add Result1 + Result2
+	lw $ra, 0($sp)		# Restore Return Address
+	addiu $sp, $sp, 16	# Restore Stack Pointer
+	jr $ra
+return:	
+	li $v0, 1		# Return 1
+	jr $ra	

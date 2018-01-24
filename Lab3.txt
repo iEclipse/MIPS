@@ -1,0 +1,113 @@
+.data
+	prompt: .asciiz "Enter a string: "
+	characters: .ascii "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz "
+	newLine: .asciiz "\n"
+	colon: .asciiz ": "
+	pal: .asciiz "\nPalindrome: "
+	value: .space  212
+	buffer: .space 400
+.globl main
+.text
+
+main:	
+	la $t1, value
+	la $a0, prompt
+	li $v0, 4
+	syscall
+	la $a0, buffer
+	li $v0, 8
+  	li $a1, 100
+	syscall
+	la $t0, ($a0)
+	
+arrayCounterStart:
+	la $a2, characters
+	
+	outerLoop:
+	la $t4, ($t0)
+	li $t3, 0
+	lb $a0, ($a2)
+	beq $a0, '\n', print
+	
+	loop:
+	lb $a1, ($t4)
+	beq $a1, '\n', outerLoopCont
+	
+	bne $a0, $a1, cont
+	addi $t3, $t3, 1
+	
+	cont:
+	addi $t4, $t4, 1
+	b loop
+	
+	outerLoopCont:
+	sb $t3, ($t1)
+	addi $a2, $a2, 1
+	addi $t1, $t1, 1
+	b outerLoop
+	
+	print:
+	la $a2, characters
+	la $t1, value
+	
+	printLoop:
+	lb $a0, ($a2)
+	beq $a0, '\n', contCode
+	li $v0, 11
+	syscall
+	la $a0, colon
+	li $v0, 4
+	syscall
+	lb $a0, ($t1)
+	li $v0, 1
+	syscall	
+	la $a0, newLine
+	li $v0, 4
+	syscall
+	addi $a2, $a2, 1
+	addi $t1, $t1, 1
+	b printLoop
+	
+contCode:
+	la $a0, pal
+	li $v0, 4
+	syscall
+	la $a0, ($t0)
+	jal palindrome
+	la $a0, ($v0)
+	li $v0, 1
+	syscall
+end:
+	li $v0, 10
+	syscall
+	
+palindrome:
+	la $a1, ($a0)
+	la $v1, ($a0)
+	
+	charCheck:
+	lb $a0, ($a1)
+	beq $a0, '\n', contPal
+	addi $a2, $a2, 1
+	addi $a1, $a1, 1
+	b charCheck
+	
+	contPal:
+	addi $a1, $a1, -1
+	
+	loopPal:
+	lb $t0, ($a1)
+	lb $t1, ($v1)
+	beq $t1, '\n', rTrue
+	bne $t0, $t1, rFalse
+	addi $v1, $v1, 1
+	addi $a1, $a1, -1
+	b loopPal
+	
+	rTrue:
+	li $v0, 1
+	jr $ra
+	
+	rFalse:
+	li $v0, 0
+	jr $ra

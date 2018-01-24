@@ -1,0 +1,122 @@
+.data
+	array: .space 80
+	prompt1: .asciiz "Enter an integer: "
+	prompt2: .asciiz "Enter a value for n (1-20): " 
+	newLine: .asciiz "\n"
+	space: .asciiz " "
+
+.globl main
+.text
+
+main:
+	# Assigned Addresses
+	la $t0, array
+	li $t1, 20
+	la $t2, newLine
+	la $t3, space
+loop:
+	# Prompts User Input
+	la $a0, prompt1
+	li $v0, 4
+	syscall
+	li $v0, 5
+	syscall
+	sw $v0, ($t0)
+	addi $t0, $t0, 4
+	addi $t1, $t1, -1
+	bgtz $t1, loop
+	
+	# Resets Index Variables
+	la $t0, array
+	li $t1, 20
+	
+printLine:
+	# Prints One Value per Line
+	lw $a0, ($t0)
+	li $v0, 1
+	syscall
+	la $a0, 0($t2)
+	li $v0, 4
+	syscall
+	addi $t0, $t0, 4
+	addi $t1, $t1, -1
+	bgtz $t1, printLine
+	
+	# Resets Index Variables
+	la $t0, array
+	li $t1, 20
+	
+printSpace:
+	# Prints All Values on One Line
+	lw $a0, ($t0)
+	li $v0, 1
+	syscall
+	la $a0, ($t3)
+	li $v0, 4
+	syscall
+	addi $t0, $t0, 4
+	addi $t1, $t1, -1
+	bgtz $t1, printSpace
+	la $a0, ($t2)
+	li $v0, 4
+	syscall
+	
+	# Resets Index Variables
+	la $t0, array
+	li $t1, 20
+
+promptN:	
+	# Prompts Value for N
+	la $a0, prompt2
+	li $v0, 4
+	syscall
+	li $v0, 5
+	syscall
+	la $t4, ($v0)
+	la $t5, ($t4)
+	blez $v0, promptN
+	
+printN:
+	# Prints N Values per Line
+	lw $a0, ($t0)
+	li $v0, 1
+	syscall
+	la $a0, ($t3)
+	li $v0, 4
+	syscall
+	addi $t0, $t0, 4
+	addi $t1, $t1, -1
+	addi $t5, $t5, -1
+	blez $t1, continue
+	blez $t5, printNLoop
+	b printN
+
+printNLoop:
+	# Prints New Line
+	la $a0, ($t2)
+	li $v0, 4
+	la $t5, ($t4)
+	syscall
+	b printN
+	
+continue:
+	# Linebreak
+	la $a0, ($t2)
+	li $v0, 4
+	syscall
+
+	# Resets Index Variables
+	li $t1, 20
+	addi $t0, $t0, -4
+	
+printReverseSpace:
+	# Prints in Reverse Order
+	lw $a0, ($t0)
+	li $v0, 1
+	syscall
+	la $a0, ($t3)
+	li $v0, 4
+	syscall
+	addi $t0, $t0, -4
+	addi $t1, $t1, -1
+	bgtz $t1, printReverseSpace

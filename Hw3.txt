@@ -1,0 +1,59 @@
+.data
+	prompt: .asciiz "Enter string (Characters <= 100): "
+	lowerCase: .asciiz "\nNumber of lowercase letters: "
+	upperCase: .asciiz "\nNumber of uppercase letters: "
+	
+.globl main
+.text
+
+main:
+	la $a0, prompt
+	li $v0, 4
+	syscall
+	li $v0, 8
+  	li $a1, 100
+	la $t0, ($a0)
+	syscall
+	jal printCounter
+	addi $t1, $v0, 0
+	addi $t2, $v1, 0
+print:
+	la $a0, lowerCase
+	li $v0, 4
+	syscall
+	la $a0, ($t1)
+	li $v0, 1
+	syscall
+	la $a0, upperCase
+	li $v0, 4
+	syscall
+	la $a0, ($t2)	
+	li $v0, 1
+	syscall
+end:
+	li $v0, 10
+	syscall
+
+printCounter:
+	li $a2, 0
+	li $a3, 0
+loop:	
+	la $a1, ($a0)
+	addi $a1, $a1, 1
+	lb $a0, ($a0)
+lower:
+	beq $a0, '\n', exit
+	blt $a0, 'a', greater
+	bgt $a0, 'z', greater
+	addi $a2, $a2, 1
+greater:
+	blt $a0, 'A', cont
+	bgt $a0, 'Z', cont
+	addi $a3, $a3, 1
+cont:	
+	la $a0, ($a1)
+	b loop
+exit:
+	addi $v0, $a2, 0
+	addi $v1, $a3, 0
+	jr $ra

@@ -1,0 +1,81 @@
+.data
+array1: .space 400
+array2: .space 400
+prompt1: .asciiz "Enter a size: "
+prompt2: .asciiz "Enter an integer: "
+pos:  .asciiz "\nPostive: "
+neg:  .asciiz "\nNegative: "
+space:   .asciiz " "
+
+.globl main
+.text
+
+main:
+	li $v0, 4
+	la $a0, prompt1
+	syscall
+	li $v0, 5
+	syscall
+	la $t3, ($v0)
+	li $t4, 0
+	li $t5, 0
+	la $t1, array1
+	la $t2, array2
+	jal store
+	li $t1, 0
+	li $t2, 0
+	jal print
+	b end
+store:
+	blez $t3, return
+	addi $t3, $t3, -1
+	li $v0, 4
+	la $a0, prompt2
+	syscall
+	li $v0, 5
+	syscall
+	bltz $v0, sNeg
+	sw $v0, ($t1)
+	addi $t1, $t1, 4
+	addi $t4, $t4, 1
+	b store
+sNeg:
+	sw $v0, ($t2)
+	addi $t2, $t2, 4
+	addi $t5, $t5, 1
+	b store	
+return:
+	jr $ra
+print: 	
+	la $a0, pos
+	li $v0, 4
+	syscall
+loop1:
+	beqz $t4, printNeg
+	lw $a0, array1($t1)
+	li $v0, 1
+	syscall
+	la $a0, space
+	li $v0, 4
+	syscall
+	addi $t1, $t1, 4
+	addi $t4, $t4, -1
+	b loop1
+printNeg: 
+	la $a0, neg
+	li $v0, 4
+	syscall
+loop2:
+	beqz $t5, return
+	lw $a0, array2($t2)
+	li $v0, 1
+	syscall
+	la $a0, space
+	li $v0, 4
+	syscall
+	addi $t2, $t2, 4
+	addi $t5, $t5, -1
+	b loop2
+end:
+	li $v0, 10
+	syscall

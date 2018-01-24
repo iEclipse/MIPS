@@ -1,0 +1,40 @@
+.data
+	input: .asciiz "Enter positive value: "
+	output: .asciiz "Binary: "
+.text
+.global main
+main:
+	li $v0, 4
+	la $a0, input
+	syscall
+	li $v0, 5
+	syscall
+	la $t0, ($v0)
+	li $v0, 4
+	la $a0, output
+	syscall
+	la $a0, ($t0)
+	jal convToBinary
+	li $v0, 10
+	syscall
+	
+convToBinary:
+	bnez $a0, recursion
+	li $a0, 0
+	li $v0, 1
+	syscall
+	jr $ra
+	
+recursion:
+	addiu $sp, $sp, -8
+        div $a0, $a0, 2
+        mfhi $a2
+        sw $a2, 4($sp)
+        sw $ra, ($sp)
+	jal convToBinary
+	lw $a0, 4($sp)
+	li $v0, 1
+	syscall
+	lw $ra, ($sp)
+	addiu $sp, $sp, 8
+        jr $ra
